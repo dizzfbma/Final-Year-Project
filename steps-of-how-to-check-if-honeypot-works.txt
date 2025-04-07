@@ -1,0 +1,92 @@
+Steps of how to check to see if the file is running 
+
+
+1. Start Cowrie (SSH/Telnet Honeypot)
+Open a new WSL terminal (or any Unix-like shell).
+
+Navigate to the Cowrie folder (where bin/cowrie lives). For example:
+
+cd ~/final-year-project/cowrie
+Start Cowrie:
+
+./bin/cowrie start
+By default, Cowrie listens on port 2222 (SSH) and port 2223 (Telnet) if Telnet is enabled.
+
+(Optional) Check logs to confirm it’s running:
+
+tail -f var/log/cowrie/cowrie.json
+You might see lines like "cowrie.session.connect" when someone connects.
+
+
+
+
+2. Start Your Watchers + Flask Server
+
+Open another WSL terminal (so Cowrie keeps running in the first terminal).
+
+Navigate to the directory containing your main.py. If main.py is in ~/final-year-project, do:
+
+cd ~/final-year-project/cowrie
+or adjust the path as needed.
+
+Run your watchers + Flask code:
+
+source cowrie-env/bin/activate
+python3 ../main.py
+(If main.py is one level up. Otherwise, just python3 main.py if you’re in the same folder.)
+
+You should see:
+
+[+] Watching cowrie.json for new events...
+[+] Starting Flask server on http://0.0.0.0:5000 ...
+indicating the watchers script is running and your Flask app is up at port 5000.
+
+
+
+3. Generate SSH Login Attempts
+
+Open a third terminal (or you can do it from the second if you like).
+Attempt to SSH into Cowrie:
+
+ssh -p 2222 localhost
+Enter any username/password (like root / password). Cowrie logs it as a fake login attempt.
+Check the watchers script’s terminal. If you added a print(...) in _process_event, you’ll see a message whenever it parses a new line.
+Tail cowrie.json if you want to see new lines:
+
+cd ~/final-year-project/cowrie
+tail -f var/log/cowrie/cowrie.json
+You should see events like "eventid": "cowrie.login.failed" or "cowrie.login.success".
+
+
+
+4. Verify the Watchers Code is Receiving Events
+
+In your watchers.py, you can add a quick debug line in _process_event, for example:
+
+
+def _process_event(self, data):
+    print(f"DEBUG: Received event {data.get('eventid')} with username={data.get('username')}")
+
+    # existing logic ...
+Now, each time Cowrie writes a JSON line with eventid in ["cowrie.login.failed", "cowrie.login.success", "cowrie.command.input"], you’ll see a debug print in the terminal running python3 main.py.
+
+
+
+5. Refresh Your Flask Page
+
+Open a web browser on Windows or in WSL.
+
+Navigate to http://127.0.0.1:5000/.
+
+If you’re using WSL, you can still access 127.0.0.1:5000 from your main Windows browser.
+The watchers code has a route @app.route("/") that displays index.html, which loops over EVENTS.
+See the table of events. If you have successfully triggered SSH login attempts, your watchers script should have inserted them into EVENTS, and they appear on the page.
+
+
+
+6. Confirm the Data in the Table
+
+Each row should show timestamp, src_ip, username, password, and an anomaly flag (Yes or No) based on your ML logic.
+If you see an empty table, that means either:
+No new lines were appended to cowrie.json after watchers started, or
+The watchers code is ignoring certain event types.

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simulated Honeypot Interface</title>
+    <link rel="stylesheet" href="/static/css/simulated.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Simulated Honeypot</h1>
+
+        <div class="login-section">
+            <h2>Fake SSH Login</h2>
+            <form id="loginForm">
+                <input type="text" id="username" placeholder="Username" required>
+                <input type="password" id="password" placeholder="Password" required>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+
+        <div class="command-section">
+            <h2>Fake Command Terminal</h2>
+            <form id="commandForm">
+                <input type="text" id="command" placeholder="Enter a command" required>
+                <button type="submit">Execute</button>
+            </form>
+        </div>
+
+        <div class="response" id="responseBox"></div>
+    </div>
+
+    <script>
+        const responseBox = document.getElementById("responseBox");
+
+        document.getElementById("loginForm").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            const res = await fetch("/api/simulated-attack", {
+                method: "POST",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password, command: "" })
+            });
+            const data = await res.json();
+            responseBox.textContent = data.message;
+        });
+
+        document.getElementById("commandForm").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            const command = document.getElementById("command").value;
+            const res = await fetch("/api/simulated-attack", {
+                method: "POST",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: "", password: "", command })
+            });
+            const data = await res.json();
+            responseBox.textContent = data.message;
+        });
+    </script>
+</body>
+</html>

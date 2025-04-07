@@ -1,0 +1,8 @@
+challenges during honeypot
+27-02-2025 installing the cowrie environment 
+main issue was that cowrie is a Linux environment so I had to download it through unbuntu 
+this caused problem as I had never downloaded unbuntu through my laptop before
+I downloaded it previously through oracle and had never used a terminal to do so it was  a long procedure that needed a lot of troubleshooting for me to complete it, I had to download wsl just so I could dp this.
+
+this is the filepath in which I kept it in.
+\\wsl$\Ubuntu\home\spinn\cowrie-project\cowrie

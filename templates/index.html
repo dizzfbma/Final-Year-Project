@@ -1,0 +1,125 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Honeypot Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/static/css/style.css">
+
+</head>
+<body>
+    <h1>🛡️ Honeypot Event Dashboard</h1>
+
+    <div class="charts">
+        <div class="chart-container">
+            <canvas id="anomalyChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <canvas id="commandChart"></canvas>
+        </div>
+    </div>
+
+    <h2>Recent Events</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>IP</th>
+                <th>Username</th>
+                <th>Password</th>
+                <th>Command</th>
+                <th>Anomaly</th>
+            </tr>
+        </thead>
+        <tbody id="eventTable">
+            <!-- Dynamic rows go here -->
+        </tbody>
+    </table>
+
+    <footer>
+        &copy; 2025 Honeypot Analyzer | Built with Flask & Chart.js
+    </footer>
+
+    <script>
+        async function loadData() {
+            const res = await fetch('/api/events');
+            const data = await res.json();
+
+            const tbody = document.getElementById('eventTable');
+            tbody.innerHTML = '';
+
+            let anomalies = 0, normals = 0;
+            const commandCount = {};
+
+            data.forEach(evt => {
+                const row = document.createElement('tr');
+                if (evt.is_anomaly) {
+                    row.classList.add('anomaly');
+                    anomalies++;
+                } else {
+                    normals++;
+                }
+
+                const cmd = evt.commands || evt.input || "";
+                if (cmd) {
+                    commandCount[cmd] = (commandCount[cmd] || 0) + 1;
+                }
+
+                row.innerHTML = `
+                    <td>${evt.timestamp}</td>
+                    <td>${evt.src_ip}</td>
+                    <td>${evt.username}</td>
+                    <td>${evt.password}</td>
+                    <td>${evt.commands}</td>
+                    <td>${evt.is_anomaly ? 'Yes' : 'No'}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            drawAnomalyChart(anomalies, normals);
+            drawCommandChart(commandCount);
+        }
+
+        function drawAnomalyChart(anomalies, normals) {
+            new Chart(document.getElementById('anomalyChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Anomalies', 'Normal'],
+                    datasets: [{
+                        data: [anomalies, normals],
+                        backgroundColor: ['#e74c3c', '#2ecc71']
+                    }]
+                },
+                options: {
+                    plugins: { title: { display: true, text: 'Anomaly vs Normal Events' } }
+                }
+            });
+        }
+
+        function drawCommandChart(commandCount) {
+            const labels = Object.keys(commandCount);
+            const data = Object.values(commandCount);
+
+            new Chart(document.getElementById('commandChart'), {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Command Frequency',
+                        data,
+                        backgroundColor: '#2980b9'
+                    }]
+                },
+                options: {
+                    plugins: { title: { display: true, text: 'Command Usage Frequency' } },
+                    scales: { x: { ticks: { autoSkip: false } } }
+                }
+            });
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
