@@ -8,7 +8,7 @@ This guide explains how to start, stop, and run your honeypot environment, which
 
 ---
 
-## 🐍 Cowrie Honeypot
+## Cowrie Honeypot
 
 ### ✅ Start Cowrie
 ```bash
@@ -24,7 +24,7 @@ source cowrie-env/bin/activate
 
 ---
 
-## 🛡️ OpenCanary
+## OpenCanary
 
 > Make sure `twistd` is available in your `PATH`:
 ```bash
@@ -52,13 +52,13 @@ sudo pkill -f opencanary
 
 ---
 
-## 🌐 Flask Web Dashboard
+## Flask Web Dashboard
 
 ### ✅ Start Flask Server
 This runs the Flask dashboard, Cowrie log watcher, OpenCanary log watcher, and a simulated FTP attack generator:
 ```bash
 cd ~/final-year-project/Scripts
-source cowrie/cowrie-env/bin/activate
+source ../cowrie/cowrie-env/bin/activate
 python3 main.py
 ```
 
@@ -66,28 +66,48 @@ python3 main.py
 Visit: [http://localhost:5000](http://localhost:5000)
 
 ### ❌ Stop Flask Server
-CTRL+C
+Press `CTRL+C` in the terminal running the server.
 
 ---
 
-## 🔁 Summary
+## Summary
 
-| Task                | Command                                                                 |
-|---------------------|-------------------------------------------------------------------------|
-| 🟢 Start Cowrie      | `./bin/cowrie start`                                                    |
-| 🔴 Stop Cowrie       | `./bin/cowrie stop`                                                     |
-| 🟢 Start OpenCanary  | `~/.local/bin/opencanaryd --start --no-daemon --config=/home/spinn/.opencanary.conf` |
-| 🔴 Stop OpenCanary   | `sudo pkill -f opencanary`                                              |
-| 🟢 Start Flask Server| `python3 main.py`                                                       |
-| 🛑 Stop Flask Server | CTRL+C                                                                   |
+| Task                 | Command                                                                 |
+|----------------------|-------------------------------------------------------------------------|
+| ✅ Start Cowrie        | `./bin/cowrie start`                                                    |
+| ❌ Stop Cowrie         | `./bin/cowrie stop`                                                     |
+| ✅ Start OpenCanary    | `~/.local/bin/opencanaryd --start --no-daemon --config=/home/spinn/.opencanary.conf` |
+| ❌ Stop OpenCanary     | `sudo pkill -f opencanary`                                              |
+| ✅ Start Flask Server  | `python3 main.py`                                                       |
+| ❌ Stop Flask Server   | CTRL+C                                                                  |
 
 ---
 
-For any issues, logs can be found in:
+## Troubleshooting
+
+- Flask Web UI shows no data? Check:
+  - Cowrie and OpenCanary are running
+  - Logs are being generated at:
+    - `cowrie/var/log/cowrie/cowrie.json`
+    - `/var/tmp/opencanary.log`
+  - Your database `cowrie_events.db` is located in `database/` and is not locked
+
+- Flask server won't quit with CTRL+C?
+  - Make sure it's running in the foreground
+  - If stuck, find the process with:
+    ```bash
+    lsof -i :5000
+    kill -9 <PID>
+    ```
+
+---
+
+Logs can be manually inspected at:
 
 - `cowrie/var/log/cowrie/cowrie.json`
 - `/var/tmp/opencanary.log`
+- Combined (if applicable): `/var/tmp/honeypot_combined.log`
 
 ---
 
-**Happy Hacking! ✨**
+Happy Testing!
